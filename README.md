@@ -1,7 +1,3 @@
-Here's the updated version of your `README.md` to reflect the dual licensing for your code and the Divvy data:
-
----
-
 # Cyclistic Bike-Share Analysis
 
 ![Cyclistic Logo](logo/cyclistic_logo.png)
