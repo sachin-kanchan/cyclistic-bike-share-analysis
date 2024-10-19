@@ -2,11 +2,12 @@
 -- PROCESS PHASE --------------------------------------------------------------------------------------
 
 -- Use database
-USE google;
+USE <database_name>;
 
--- Load CSV containing last 6 months data into 'google' schema, name the table as 'rides_backup'
+-- Load CSV containing last 6 months data into schema, name the table as 'rides_backup'
 -- For lats & lng - Select Decimal(18,10) datatype
 
+SELECT * FROM rides_backup;
 
 -- Count total rows, unique ride IDs, and duplicates in the backup table
 SELECT 
@@ -132,14 +133,6 @@ ADD CONSTRAINT pk_ride_id PRIMARY KEY (ride_id);
 
 -- Create non-clustered indexes for improved query performance
 
-DROP INDEX IF EXISTS idx_started_at ON rides;
-DROP INDEX IF EXISTS idx_ended_at ON rides;
-DROP INDEX IF EXISTS idx_ride_length ON rides;
-DROP INDEX IF EXISTS idx_ride_length_seconds ON rides;
-DROP INDEX IF EXISTS idx_rideable_type ON rides;
-DROP INDEX IF EXISTS idx_member_casual ON rides;
-
-
 CREATE NONCLUSTERED INDEX idx_started_at ON rides(started_at);
 CREATE NONCLUSTERED INDEX idx_ended_at ON rides(ended_at);
 CREATE NONCLUSTERED INDEX idx_ride_length ON rides(ride_length);
@@ -234,10 +227,10 @@ ORDER BY
 SELECT
     day_of_week,
     day_name,
-    COUNT(CASE WHEN member_casual = 'casual' THEN 1 END) AS casual_rides,
     COUNT(CASE WHEN member_casual = 'member' THEN 1 END) AS member_rides,
-    CAST(ROUND(COUNT(CASE WHEN member_casual = 'casual' THEN 1 END) * 100.0 / COUNT(*), 2) AS FLOAT) AS casual_ride_percent,
-    CAST(ROUND(COUNT(CASE WHEN member_casual = 'member' THEN 1 END) * 100.0 / COUNT(*), 2) AS FLOAT) AS member_ride_percent
+    COUNT(CASE WHEN member_casual = 'casual' THEN 1 END) AS casual_rides,
+    CAST(ROUND(COUNT(CASE WHEN member_casual = 'member' THEN 1 END) * 100.0 / COUNT(*), 2) AS FLOAT) AS member_ride_percent,
+    CAST(ROUND(COUNT(CASE WHEN member_casual = 'casual' THEN 1 END) * 100.0 / COUNT(*), 2) AS FLOAT) AS casual_ride_percent
 FROM rides
 GROUP BY day_of_week, day_name
 ORDER BY day_of_week;
@@ -248,8 +241,8 @@ ORDER BY day_of_week;
 SELECT 
     day_of_week,
     day_name,
-    CAST(ROUND(AVG(CASE WHEN member_casual = 'casual' THEN ride_length_seconds / 60.0 END), 2) AS FLOAT) AS casual_avg_ride_length_minutes,
-    CAST(ROUND(AVG(CASE WHEN member_casual = 'member' THEN ride_length_seconds / 60.0 END), 2) AS FLOAT) AS member_avg_ride_length_minutes
+    CAST(ROUND(AVG(CASE WHEN member_casual = 'member' THEN ride_length_seconds / 60.0 END), 2) AS FLOAT) AS member_avg_ride_length_minutes,
+    CAST(ROUND(AVG(CASE WHEN member_casual = 'casual' THEN ride_length_seconds / 60.0 END), 2) AS FLOAT) AS casual_avg_ride_length_minutes
 FROM 
     rides
 GROUP BY 
@@ -276,3 +269,13 @@ FROM rides
 ORDER BY ride_length_seconds DESC;
 
 
+-- Top 10 Longest Rides - smaller table
+SELECT 
+	TOP 10
+	ride_id,
+	start_station_name,
+	end_station_name,
+	ride_length,
+	day_name
+FROM rides
+ORDER BY ride_length_seconds DESC;
